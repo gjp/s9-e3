@@ -1,0 +1,42 @@
+[
+{"4": {
+  "type": "SINK",
+  "input": [3],
+  "state": null
+}},
+{"33": {
+  "type": "OR",
+  "input": [11, 22],
+  "state": null
+}},
+{"1": {
+  "type": "SOURCE",
+  "output": [3],
+  "state": 0
+}},
+{"2": {
+  "type": "SOURCE",
+  "output": [3],
+  "state": 1
+}},
+{"11": {
+  "type": "SOURCE",
+  "output": [33],
+  "state": 0
+}},
+{"44": {
+  "type": "SINK",
+  "input": [33],
+  "state": null
+}},
+{"3": {
+  "type": "AND",
+  "input": [1, 2],
+  "state": null
+}},
+{"22": {
+  "type": "SOURCE",
+  "output": [33],
+  "state": 1
+}}
+]
