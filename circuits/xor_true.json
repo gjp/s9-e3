@@ -1,0 +1,20 @@
+[
+{"1": {
+  "type": "IN",
+  "output": false
+}},
+{"2": {
+  "type": "IN",
+  "output": true
+}},
+{"3": {
+  "type": "XOR",
+  "input": [1, 2],
+  "output": null
+}},
+{"4": {
+  "type": "OUT",
+  "input": [3],
+  "output": null
+}}
+]

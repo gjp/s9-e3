@@ -1,0 +1,25 @@
+[
+{"1": {
+  "type": "IN",
+  "output": true
+}},
+{"2": {
+  "type": "IN",
+  "output": true
+}},
+{"3": {
+  "type": "NAND",
+  "input": [1, 2],
+  "output": null
+}},
+{"4": {
+  "type": "NAND",
+  "input": [3, 3],
+  "output": null
+}},
+{"5": {
+  "type": "OUT",
+  "input": [4],
+  "output": null
+}}
+]
