@@ -1,0 +1,10 @@
+I think you're complicating things by trying to treat the files as if they are a database
+I would think that each file would just implement a named circuit, and that the
+ dependent circuits would need to be loaded before the ones which depend on them
+that's probably not even necessary now that I think of it, because you can lazily
+ evaluate things
+I don't think it's a good idea to reduce the circuits before passing them to the solver,
+ let the solver do that
+load up a bunch of definitions, then issue an execute with the name of the circuit you
+ want to evaluate and the input values
+evaluator --definitions *.json --circuit COMPLEX_CIRCUIT --inputs "A: 1, B: 0, C: 1"
