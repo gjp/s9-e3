@@ -4,12 +4,10 @@
 require 'json'
 require 'tsort'
 require_relative 'gates'
-#require_relative 'options'
 
 class Solver
   include TSort
   include Gates
-  #include Options
 
   GATES = Gates::BASIC
  
@@ -22,8 +20,6 @@ class Solver
     @state = {}
     @input_ports = []
     @output_ports = []
-
-    #get_options
 
     @entry_circuit = @options[:circuit]
     raise RuntimeError, "No top level circuit specified" unless @entry_circuit
