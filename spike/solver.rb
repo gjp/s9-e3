@@ -1,49 +1,42 @@
 require 'json'
 require 'tsort'
 require_relative 'gates'
+require_relative 'options'
 
 class Solver
   include TSort
   include Gates
+  include Options
 
   GATES = Gates::BASIC
  
   attr_reader :circuits, :wires, :ordered_keys
-  attr_accessor :inputs
 
   def initialize
+    @options = {}
     @circuits = {}
     @wires = {}
     @state = {}
     @input_ports = []
     @output_ports = []
 
-    # FIXME: CLI arg
-    @inputs = {'Cin' => false, 'A1' => true, 'B1' => false, 'A2' => true, 'B2' => true }
-    @entry_circuit = "TwoBitAdder"
-    #@inputs = {'A' => false, 'B' => true, 'S' => false }
-    #@entry_circuit = 'MUX21'
+    get_options
 
-    parse_input
+    @entry_circuit = @options[:circuit]
+    raise RuntimeError, "No top level circuit specified" unless @entry_circuit
+
+    @inputs = @options[:inputs]
+
+    parse_circuit_definitions
     locate_io_ports
     build(@entry_circuit)
     order_keys
 
-    # FIXME: CLI arg
-    dump_initial_state if @debug
-    solve
-
-    # FIXME
-    outputs
-    compute_truth_table
-    truth_table
+    dump_initial_state if @options[:verbose]
   end
 
-  def parse_input
-    # FIXME: get this from command line as a named argument
-    filenames = ARGV
-
-    filenames.each do |filename|
+  def parse_circuit_definitions
+    ARGV.each do |filename|
       circuit = JSON.parse(File.open(filename).read)
       name = circuit['name']
       parts = circuit['parts']
@@ -51,8 +44,7 @@ class Solver
       raise RuntimeError,
         "Circuit #{name} does not contain a parts hash" unless parts.is_a?(Hash)
 
-      @circuits[name] = parts
-      @circuits[name].freeze()
+      @circuits[name] = parts.freeze
 
       puts "Loaded circuit #{circuit['name']}"
     end
@@ -90,24 +82,24 @@ class Solver
 
   def solve
     # Look ma, no explicit recursion!
-   
+    # This solver relies on the builder to flatten nested inputs, and tsort
+    # to provide the keys to the wire hash in the right order.
+  
     @ordered_keys.each do |lexp|
       rexp = @wires[lexp]
 
       if rexp
-        if rexp.is_a?(Array) # This is a gate.
-          #puts "Gate: #{lexp} #{rexp}"
+        if rexp.is_a?(Array) # This is a gate. Reduce it.
           @state[lexp] = reduce_gate( referenced_circuit(lexp), gather_state(rexp) )
+
         else # This is a wire. Copy state.
-          #puts "Wire: copying state #{@state[rexp]} from #{rexp} to #{lexp}"
           @state[lexp] = @state[rexp]
         end
-      else # No dependents. This is an input.
-        #puts "Input: setting #{lexp} to #{@inputs[lexp]}"
+
+      else # This is an input port.
         @state[lexp] = @inputs[lexp]
       end
     end
-    #puts @state
   end
 
   def gather_state(wires)
@@ -115,7 +107,6 @@ class Solver
   end
 
   def reduce_gate(type, input)
-    #puts "reduce gate: #{type} #{input}"
     gate = GATES[type]
     raise RuntimeError, "Unknown gate type #{type}" unless gate
     gate.call(*input)
@@ -137,7 +128,9 @@ class Solver
   end
 
   def truth_table
-    p @input_ports + @output_ports
+    compute_truth_table unless @truth_table
+
+    puts "\n " + (@input_ports + @output_ports).join('  ')
     @truth_table.each do |row|
       p row.map{|x| x ? 1 : 0}
     end
@@ -145,31 +138,19 @@ class Solver
 
   def outputs
     o = @output_ports.map {|name| "#{name}: #{@state[name]}"}
-    puts "output: #{o}"
+    puts "\noutput: #{o}"
   end
 
 private
 
-  def dump_initial_state
-    puts "\nInputs:"
-    p @input_ports
-
-    puts "\nOutputs:"
-    p @output_ports
- 
-    puts "\nOrdered keys:"
-    @ordered_keys.each {|id|
-      puts "#{id} <- #{@wires[id]}"
-    }
-  end
-
-  def locate_io_ports
+ def locate_io_ports
     @circuits[@entry_circuit].each do |input, output|
       @input_ports << input unless input.include?('#')
       @output_ports << output unless output.class == Array || output.include?('#')
     end
   end
 
+  #FIXME: These string manipulations are kind of ugly
   def referenced_circuit(name)
     name.split('.')[-2].split('#')[0]
   end
@@ -196,10 +177,22 @@ private
     inputs = [inputs] unless inputs.is_a?(Array)
     inputs.each(&block)
   end
+
+  def dump_initial_state
+    puts "\nInputs:"
+    p @input_ports
+
+    puts "\nOutputs:"
+    p @output_ports
+ 
+    puts "\nOrdered keys:"
+    @ordered_keys.each {|id| puts "#{id} <- #{@wires[id]}" }
+
+    puts
+  end
 end
 
 s = Solver.new
 s.solve
-#puts JSON.pretty_generate(s.nodes)
-#s.compute_truth_table
-#s.truth_table
+s.outputs
+s.truth_table
