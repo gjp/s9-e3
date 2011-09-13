@@ -1,0 +1,15 @@
+{
+  "name": "MUX21",
+  "parts": {
+    "S": [
+      "AND#2.A",
+      "NOT#1.A"
+    ],
+    "A": "AND#1.A",
+    "B": "AND#2.B",
+    "NOT#1.Q": "AND#1.B",
+    "AND#1.Q": "OR#1.A",
+    "AND#2.Q": "OR#1.B",
+    "OR#1.Q": "Y"
+  }
+}

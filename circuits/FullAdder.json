@@ -1,0 +1,25 @@
+{
+  "name": "FullAdder",
+  "parts": {
+    "A": [
+      "XOR#1.A",
+      "AND#2.A"
+    ],
+    "B": [
+      "XOR#1.B",
+      "AND#2.B"
+    ],
+    "XOR#1.Q": [
+      "XOR#2.A",
+      "AND#1.A"
+    ],
+    "Cin": [
+      "XOR#2.B",
+      "AND#1.B"
+    ],
+    "XOR#2.Q": "S",
+    "AND#1.Q": "OR#1.A",
+    "AND#2.Q": "OR#1.B",
+    "OR#1.Q": "Cout"
+  }
+}

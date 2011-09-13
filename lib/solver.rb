@@ -4,31 +4,31 @@
 require 'json'
 require 'tsort'
 require_relative 'gates'
-require_relative 'options'
+#require_relative 'options'
 
 class Solver
   include TSort
   include Gates
-  include Options
+  #include Options
 
   GATES = Gates::BASIC
  
   attr_reader :circuits, :wires, :ordered_keys
 
-  def initialize
-    @options = {}
+  def initialize(options)
+    @options = options
     @circuits = {}
     @wires = {}
     @state = {}
     @input_ports = []
     @output_ports = []
 
-    get_options
+    #get_options
 
     @entry_circuit = @options[:circuit]
     raise RuntimeError, "No top level circuit specified" unless @entry_circuit
 
-    @inputs = @options[:inputs]
+    @inputs = @options[:inputs] || {}
 
     parse_circuit_definitions
     locate_io_ports
@@ -39,6 +39,8 @@ class Solver
   end
 
   def parse_circuit_definitions
+    raise RuntimeError, "No circuit definitions given" unless ARGV.size > 0
+
     ARGV.each do |filename|
       circuit = JSON.parse(File.open(filename).read)
       name = circuit['name']
@@ -196,8 +198,3 @@ private
     puts
   end
 end
-
-s = Solver.new
-s.solve
-s.outputs
-s.truth_table
