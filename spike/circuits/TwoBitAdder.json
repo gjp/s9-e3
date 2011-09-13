@@ -1,0 +1,14 @@
+{
+  "name": "TwoBitAdder",
+  "parts": {
+    "Cin": "FullAdder#1.Cin",
+    "A1": "FullAdder#1.A",
+    "B1": "FullAdder#1.B",
+    "A2": "FullAdder#2.A",
+    "B2": "FullAdder#2.B",
+    "FullAdder#1.S": "S1",
+    "FullAdder#1.Cout": "FullAdder#2.Cin",
+    "FullAdder#2.S": "S2",
+    "FullAdder#2.Cout": "Cout"
+  }
+}

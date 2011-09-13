@@ -7,9 +7,6 @@ module Gates
     "NOT"  => Proc.new {|a,b| !a },
     "NAND" => Proc.new {|a,b| !(a & b) },
     "NOR"  => Proc.new {|a,b| !(a | b) },
-    "XNOR" => Proc.new {|a,b| !(a ^ b) },
-
-    "OUT"  => Proc.new {|a| a },
-    "SPLIT"=> Proc.new {|a| [a,a] }
+    "XNOR" => Proc.new {|a,b| !(a ^ b) }
   }
 end
