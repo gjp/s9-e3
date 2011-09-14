@@ -34,57 +34,7 @@ class Solver
     dump_initial_state if @options[:verbose]
   end
 
-  def parse_circuit_definitions
-    raise RuntimeError, "No circuit definitions given" unless ARGV.size > 0
-
-    ARGV.each do |filename|
-      circuit = JSON.parse(File.open(filename).read)
-      name = circuit['name']
-      parts = circuit['parts']
-
-      raise RuntimeError,
-        "Circuit #{name} does not contain a parts hash" unless parts.is_a?(Hash)
-
-      @circuits[name] = parts.freeze
-
-      puts "Loaded circuit #{circuit['name']}"
-    end
-  end
-
-  # This code was originally copied from Steve Morris.
-  # I adopted his input format (converted to JSON)
-  # so the processing method is extremely similar
-  
-  def build(name, prefix = '')
-    @circuits[name].each_pair do |input, outputs|
-      outputs = [outputs] unless outputs.is_a?(Array)
-
-      outputs.each do |output|
-        ns_output = prefix + output
-        ns_input  = prefix + input
-        @wires[ns_output] = ns_input
-
-        next unless input.include?('#') 
-
-        circuit = referenced_circuit(ns_input)
-
-        if GATES.key?(circuit)
-          # Add wires for a logic gate output and inputs
-          @wires[ns_input] = [ns_input.chop + 'A']
-          @wires[ns_input] << ns_input.chop + 'B' unless circuit == 'NOT'
-        else
-          raise RuntimeError,
-            "Circuit #{circuit} referenced but not loaded" unless @circuits[circuit]
-
-          # Recurse to the referenced circuit, using this circuit as a namespace
-          build(circuit, namespace(ns_input))
-        end
-      end
-    end
-  end
-
   def solve
-    # Look ma, no explicit recursion!
     # This solver relies on the builder to flatten nested inputs, and tsort
     # to provide the keys to the wire hash in the right order.
   
@@ -103,16 +53,6 @@ class Solver
         @state[lexp] = @inputs[lexp]
       end
     end
-  end
-
-  def gather_state(wires)
-    wires.map{|id| @state[id] }
-  end
-
-  def reduce_gate(type, input)
-    gate = GATES[type]
-    raise RuntimeError, "Unknown gate type #{type}" unless gate
-    gate.call(*input)
   end
 
   def compute_truth_table
@@ -146,7 +86,71 @@ class Solver
 
 private
 
- def locate_io_ports
+  def parse_circuit_definitions
+    raise RuntimeError, "No circuit definitions given" unless ARGV.size > 0
+
+    ARGV.each do |filename|
+      circuit = JSON.parse(File.open(filename).read)
+      name = circuit['name']
+      parts = circuit['parts']
+
+      raise RuntimeError,
+        "Circuit #{name} does not contain a parts hash" unless parts.is_a?(Hash)
+
+      @circuits[name] = parts.freeze
+
+      puts "Loaded circuit #{circuit['name']}"
+    end
+  end
+
+  # This code was originally copied from Steve Morris.
+  # I adopted his input format (converted to JSON)
+  # so the processing method is extremely similar
+  
+  def build(name, ns = '')
+    @circuits[name].each_pair do |input, outputs|
+      outputs = [outputs] unless outputs.is_a?(Array)
+      ns_input  = ns + input
+
+      outputs.each do |output|
+        ns_output = ns + output
+        @wires[ns_output] = ns_input
+
+        next unless input.include?('#') 
+
+        circuit = referenced_circuit(ns_input)
+        build_referenced_circuit(circuit, ns_input)
+      end
+    end
+  end
+
+  def build_referenced_circuit(circuit, input)
+    if GATES.key?(circuit)
+      # Basic gates will follow the naming convention of A and B for input ports
+      # We do not care which is which; these gates are symmetrical
+
+      @wires[input] = [input.chop + 'A']
+      @wires[input] << input.chop + 'B' unless circuit == 'NOT'
+    else
+      raise RuntimeError,
+        "Circuit #{circuit} referenced but not loaded" unless @circuits[circuit]
+
+      # Recurse to the referenced circuit, using this circuit's name as a namespace
+      build(circuit, namespace(input))
+    end
+  end
+
+  def gather_state(wires)
+    wires.map{|id| @state[id] }
+  end
+
+  def reduce_gate(type, input)
+    gate = GATES[type]
+    raise RuntimeError, "Unknown gate type #{type}" unless gate
+    gate.call(*input)
+  end
+
+  def locate_io_ports
     @circuits[@entry_circuit].each do |input, output|
       @input_ports << input unless input.include?('#')
       @output_ports << output unless output.class == Array || output.include?('#')
@@ -154,6 +158,8 @@ private
   end
 
   #FIXME: These string manipulations are kind of ugly
+  # May want to represent wires as structs or classes instead
+  
   def referenced_circuit(name)
     name.split('.')[-2].split('#')[0]
   end
