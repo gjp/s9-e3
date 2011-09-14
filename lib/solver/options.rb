@@ -1,6 +1,4 @@
-require 'optparse'
-
-module Options
+module CircuitSimulator
   def get_options
     OptionParser.new do |opts|
       opts.banner = "Usage: #{$PROGRAM_NAME} [options] FILE [...]"
