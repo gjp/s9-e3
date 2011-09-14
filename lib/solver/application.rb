@@ -1,25 +1,26 @@
 module CircuitSimulator
   class Application
     def self.run(argv)
-      options = {}
-      get_options(options).parse!
+      options, filenames = get_options(argv)
 
-      s = Solver.new(options)
+      s = Solver.new(options, filenames)
       s.solve
       puts s.outputs
 
       s.truth_table if options[:truth]
     end
 
-    def self.get_options(options)
-      OptionParser.new do |opts|
-        opts.banner = "Usage: #{$PROGRAM_NAME} [options] FILE [...]"
+    def self.get_options(argv)
+      options = {}
 
-        opts.on("-c", "--circuit CIRCUIT", "Name of top-level circuit") do |c|
+      filenames = OptionParser.new do |parser|
+        parser.banner = "Usage: #{$PROGRAM_NAME} [options] FILE [...]"
+
+        parser.on("-c", "--circuit CIRCUIT", "Name of top-level circuit") do |c|
           options[:circuit] = c
         end
 
-        opts.on("-i", "--inputs \"A:1, B:0, [...]\"", "Specify inputs") do |i|
+        parser.on("-i", "--inputs \"A:1, B:0, [...]\"", "Specify inputs") do |i|
           list = i.split(/[, ]+/)
           options[:inputs] = {}
 
@@ -29,15 +30,17 @@ module CircuitSimulator
           end
         end
 
-        opts.on("-t", "--truth", "Compute truth table") do |t|
+        parser.on("-t", "--truth", "Compute truth table") do |t|
           options[:truth] = t
         end
 
-        opts.on("-v", "--verbose", "Run verbosely") do |v|
+        parser.on("-v", "--verbose", "Run verbosely") do |v|
           options[:verbose] = v
         end
+      end.parse(argv)
 
-      end
+      [options, filenames]
     end
+
   end
 end

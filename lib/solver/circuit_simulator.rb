@@ -14,7 +14,9 @@ module CircuitSimulator
 
     attr_reader :circuits, :wires, :ordered_keys
 
-    def initialize(options)
+    def initialize(options, filenames)
+      p options
+      p filenames
       @options = options
       @circuits = {}
       @wires = {}
@@ -27,7 +29,7 @@ module CircuitSimulator
 
       @inputs = @options[:inputs] || {}
 
-      parse_circuit_definitions
+      parse_circuit_definitions(filenames)
       locate_io_ports
       build(@entry_circuit)
       order_keys
@@ -85,12 +87,12 @@ module CircuitSimulator
       puts "\noutput: #{o}"
     end
 
-    private
+  private
 
-    def parse_circuit_definitions
-      raise RuntimeError, "No circuit definitions given" unless ARGV.size > 0
+    def parse_circuit_definitions(filenames)
+      raise RuntimeError, "No circuit definitions given" unless filenames.size > 0
 
-      ARGV.each do |filename|
+      filenames.each do |filename|
         circuit = JSON.parse(File.open(filename).read)
         name = circuit['name']
         parts = circuit['parts']
