@@ -1,9 +1,9 @@
 module CircuitSimulator
   class Application
     def self.run(argv)
-      options, filenames = get_options(argv)
+      options = get_options(argv)
 
-      s = Solver.new(options, filenames)
+      s = Solver.new(options)
       s.solve
       puts s.outputs
 
@@ -13,7 +13,7 @@ module CircuitSimulator
     def self.get_options(argv)
       options = {}
 
-      filenames = OptionParser.new do |parser|
+      options[:filenames] = OptionParser.new do |parser|
         parser.banner = "Usage: #{$PROGRAM_NAME} [options] FILE [...]"
 
         parser.on("-c", "--circuit CIRCUIT", "Name of top-level circuit") do |c|
@@ -39,7 +39,7 @@ module CircuitSimulator
         end
       end.parse(argv)
 
-      [options, filenames]
+      options
     end
 
   end
