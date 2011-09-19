@@ -4,8 +4,7 @@ _written by Gregory Parkhurst for Mendicant University core skills session #9_
 
 version 0.1.0
 
-This code is in pretty dire need of refactoring. Thus far I've focused on solidifying
-basic features and adding a bit of error handling.
+This code is currently undergoing refactoring. Thus far I've focused on solidifying basic features and adding a bit of error handling.
 
 Example run commands and output:
 
@@ -22,6 +21,7 @@ output: ["S1: false", "S2: true", "Cout: false"]
 Loaded circuit FullAdder
 Loaded circuit MUX21
 Loaded circuit TwoBitAdder
+
 output: ["S: false", "Cout: false"]
 
 
@@ -35,3 +35,11 @@ output: ["S: false", "Cout: false"]
 [1, 1, 0, 0, 1]
 [1, 1, 1, 1, 1]
 ````
+
+## Issues / work in progress:
+
+- Input format should be documented
+- The code structure is very procedural
+- The circuit graph uses three separate but similar data structures. These should be merged into a single structure with a new class as nodes
+- Input, computation, and output concerns should be separated
+- Multiple output modules should be available. In the future, these may include a simple list of output port values, machine-readable truth table, pretty truth table, DOT, and JSON
