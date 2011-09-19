@@ -1,4 +1,4 @@
-module CircuitSimulator
+module CircuitSim
   GATES = {
     "AND"  => Proc.new {|a,b| a & b },
     "OR"   => Proc.new {|a,b| a | b },

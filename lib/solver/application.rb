@@ -1,4 +1,4 @@
-module CircuitSimulator
+module CircuitSim
   class CircuitError < RuntimeError; end
 
   class Application
@@ -14,7 +14,7 @@ module CircuitSimulator
       circuit = Builder.build(params).circuit
       circuit.dump if params[:verbose]
 
-      circuit.solve_for(params[:inputs]) if params[:inputs]
+      circuit.output_for(params[:inputs]) if params[:inputs]
       circuit.truth_table if params[:truth]
 
     rescue CircuitError => e

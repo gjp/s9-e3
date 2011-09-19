@@ -1,4 +1,4 @@
-module CircuitSimulator
+module CircuitSim
   class Builder
     include TSort
 
@@ -15,8 +15,9 @@ module CircuitSimulator
       @entry_circuit = @params[:circuit]
 
       parse_circuit_definitions
-      locate_io_ports
       build_circuit(@entry_circuit)
+
+      locate_io_ports
       order_keys
     end
 
@@ -43,65 +44,44 @@ module CircuitSimulator
 
     # I adopted Steve Morris' input format (converted to JSON)
     # so the processing method is extremely similar
-
-    def build_circuit(name, ns = '')
+ 
+    def build_circuit(name, path = '')
       @definitions[name].each_pair do |input, outputs|
+        ns_input = Pin.new(path + input)
         outputs = *outputs
-        ns_input  = ns + input
 
         outputs.each do |output|
-          ns_output = ns + output
-          @circuit.wires[ns_output] = ns_input
-
-          next unless input.include?('#') 
-
-          circuit = referenced_circuit(ns_input)
-          build_referenced_circuit(circuit, ns_input)
+          output = Pin.new(path + output)
+          @circuit.wires[output] = ns_input
+          build_subcircuit(ns_input) if input.include?('#')
         end
       end
     end
 
-    def build_referenced_circuit(circuit, input)
-      if GATES.include?(circuit)
-        # Basic gates will follow the naming convention of A and B for input ports
-        # We do not care which is which; these gates are symmetrical
+    def build_subcircuit(output)
+      if GATES.include?(output.part)
+        # Subcircuit gates are assigned the traditional A and B port names
+        @circuit.wires[output] = [ Pin.new(output.path + 'A') ]
 
-        @circuit.wires[input] = [input.chop + 'A']
-        @circuit.wires[input] << input.chop + 'B' if GATES[circuit].arity == 2
+        if GATES[output.part].arity == 2
+          @circuit.wires[output] << Pin.new(output.path + 'B')
+        end
 
-      elsif @definitions[circuit]
-        # Recurse to the referenced circuit, using this circuit's name as a namespace
-        build_circuit(circuit, namespace(input))
+      elsif @definitions[output.part]
+        build_circuit(output.part, output.path)
 
       else
-        raise CircuitError,
-          "Circuit #{circuit} referenced but not loaded" unless @circuits[circuit]
+        raise CircuitError, "Circuit #{output.name} referenced but not loaded"
       end
     end
 
   private
 
     def locate_io_ports
-      unless @definitions[@entry_circuit]
-        raise CircuitError, "Circuit #{@entry_circuit} referenced but not loaded"
-      end
-
       @definitions[@entry_circuit].each do |input, output|
         @circuit.input_ports << input unless input.include?('#')
         @circuit.output_ports << output unless output.class == Array || output.include?('#')
       end
-    end
-
-    def referenced_circuit(name)
-      # Return only the circuit or gate name
-      # "FullAdder#1.XOR#1.Q" -> "XOR"
-      name.split('.')[-2].split('#')[0]
-    end
-
-    def namespace(name)
-      # Return everything but the final port name
-      # "FullAdder#1.A" -> "FullAdder#1."
-      name.split('.')[0..-2].join('.') + '.'
     end
 
     def order_keys
@@ -114,7 +94,7 @@ module CircuitSimulator
 
     def tsort_each_child(node, &block)
       return nil unless inputs = @circuit.wires[node]
-      inputs = [inputs] unless inputs.is_a?(Array)
+      inputs = *inputs
       inputs.each(&block)
     end
   end
