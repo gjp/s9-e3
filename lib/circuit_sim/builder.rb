@@ -1,5 +1,6 @@
 module CircuitSim
   class Builder
+
     include TSort
 
     attr_reader :circuit
@@ -29,7 +30,8 @@ module CircuitSim
         parts = circuit_definition['parts']
 
         unless parts.is_a?(Hash)
-          raise CircuitError, "Circuit #{name} does not contain a parts hash"
+          raise CircuitError,
+            "Circuit #{name} does not contain a parts hash"
         end
 
         @definitions[name] = parts.freeze
@@ -38,7 +40,8 @@ module CircuitSim
       end
 
       unless @definitions[@entry_circuit]
-        raise CircuitError, "Top level circuit #{@entry_circuit} was not found" 
+        raise CircuitError,
+          "Top level circuit #{@entry_circuit} was not found" 
       end
     end
 
@@ -51,8 +54,7 @@ module CircuitSim
         outputs = *outputs
 
         outputs.each do |output|
-          output = Pin.new(path + output)
-          @circuit.wires[output] = ns_input
+          @circuit.add_wire(ns_input, Pin.new(path + output) )
           build_subcircuit(ns_input) if input.include?('#')
         end
       end
@@ -61,17 +63,18 @@ module CircuitSim
     def build_subcircuit(output)
       if GATES.include?(output.part)
         # Subcircuit gates are assigned the traditional A and B port names
-        @circuit.wires[output] = [ Pin.new(output.path + 'A') ]
+        @circuit.add_gate( Pin.new(output.path + 'A'), output )
 
-        if GATES[output.part].arity == 2
-          @circuit.wires[output] << Pin.new(output.path + 'B')
+        if GATES[output.part].binary?
+          @circuit.add_gate( Pin.new(output.path + 'B'), output )
         end
 
       elsif @definitions[output.part]
         build_circuit(output.part, output.path)
 
       else
-        raise CircuitError, "Circuit #{output.name} referenced but not loaded"
+        raise CircuitError,
+          "Circuit #{output.name} referenced but not loaded"
       end
     end
 
@@ -79,10 +82,10 @@ module CircuitSim
 
     def locate_io_ports
       @definitions[@entry_circuit].each do |input, output|
-        @circuit.input_ports << input unless input.include?('#')
+        @circuit.add_input_port(input) unless input.include?('#')
 
         unless output.class == Array || output.include?('#')
-          @circuit.output_ports << output
+          @circuit.add_output_ports(output)
         end
       end
     end
@@ -100,5 +103,6 @@ module CircuitSim
       inputs = *inputs
       inputs.each(&block)
     end
+
   end
 end

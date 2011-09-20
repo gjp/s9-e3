@@ -12,10 +12,10 @@ module CircuitSim
         "No top level circuit specified" unless params[:circuit]
 
       circuit = Builder.build(params).circuit
-      circuit.dump if params[:verbose]
 
-      circuit.output_for(params[:inputs]) if params[:inputs]
-      circuit.truth_table if params[:truth]
+      puts circuit.dump if params[:verbose]
+      puts circuit.output_for(params[:inputs]) if params[:inputs]
+      puts circuit.truth_table if params[:truth]
 
     rescue CircuitError => e
       puts "\nCircuitError: #{e.message}"
