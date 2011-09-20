@@ -75,12 +75,15 @@ module CircuitSim
       end
     end
 
-  private
+    private
 
     def locate_io_ports
       @definitions[@entry_circuit].each do |input, output|
         @circuit.input_ports << input unless input.include?('#')
-        @circuit.output_ports << output unless output.class == Array || output.include?('#')
+
+        unless output.class == Array || output.include?('#')
+          @circuit.output_ports << output
+        end
       end
     end
 

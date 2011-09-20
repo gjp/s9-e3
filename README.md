@@ -11,14 +11,14 @@ circuitsim reads a set of digital logic definition files in JSON format and comp
 Example run commands and output:
 
 ```
-> ruby bin/circuitsim.rb --circuit TwoBitAdder --input "Cin:0 A1:1 A2:0 B1:1 B2:0" lib/circuits/*.json
+> ruby bin/circuitsim.rb --circuit TwoBitAdder --input "Cin:0 A1:1 A2:0 B1:1 B2:0" data/circuits/*.json
 Loaded circuit FullAdder
 Loaded circuit MUX21
 Loaded circuit TwoBitAdder
 
 output: ["S1: false", "S2: true", "Cout: false"]
 
-> ruby bin/circuitsim.rb --truth --circuit FullAdder lib/circuits/*.json
+> ruby bin/circuitsim.rb --truth --circuit FullAdder data/circuits/*.json
 Loaded circuit FullAdder
 Loaded circuit MUX21
 Loaded circuit TwoBitAdder

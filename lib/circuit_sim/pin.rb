@@ -14,14 +14,15 @@ module CircuitSim
         @part = @part_id.split('#')[0] 
         @path = names[0..-2].join('.') + '.'
       else
-        @part = @path = nil
+        @part = nil
+        @path = nil
       end
 
       @state = nil
     end
 
     def is_circuit?
-      !!@part && !is_gate?
+      @part && !is_gate?
     end
 
     def is_gate?

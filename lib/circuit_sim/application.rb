@@ -27,17 +27,23 @@ module CircuitSim
       params[:filenames] = OptionParser.new do |parser|
         parser.banner = "Usage: #{$PROGRAM_NAME} [params] FILE [...]"
 
-        parser.on("-c", "--circuit CIRCUIT", "Name of top-level circuit") do |c|
+        parser.on("-c",
+                  "--circuit CIRCUIT",
+                  "Name of top-level circuit") do |c|
+
           params[:circuit] = c
         end
 
-        parser.on("-i", "--inputs \"A:1, B:0, [...]\"", "Specify inputs") do |i|
+        parser.on("-i",
+                  "--inputs \"A:1, B:0, [...]\"",
+                  "Specify inputs") do |i|
+
           list = i.split(/[, ]+/)
           params[:inputs] = {}
 
           list.each do |i|
             k,v = i.split(':')
-            params[:inputs][k] = (v.to_i == 1 ? true : false)
+            params[:inputs][k] = (v.to_i == 1)
           end
         end
 

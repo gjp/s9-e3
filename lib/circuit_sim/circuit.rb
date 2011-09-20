@@ -47,7 +47,7 @@ module CircuitSim
       puts
     end
  
-  private
+    private
 
     def solve_for(inputs)
       # This solver relies on the builder to flatten nested inputs
@@ -98,8 +98,7 @@ module CircuitSim
     end
 
     def int_to_truths(i, bits)
-      # Convert an integer to a true/false bit array. Based on code from JEG2
-      Array.new(bits) { |bit| i[bit] == 1 ? true : false }.reverse!
+      i.to_s(2).rjust(bits, '0').chars.map { |e| e == '1' }
     end
   end
 end

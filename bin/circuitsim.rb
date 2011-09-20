@@ -1,3 +1,3 @@
-require_relative '../lib/solver'
+require_relative '../lib/circuit_sim'
 
 CircuitSim::Application.run(ARGV)
