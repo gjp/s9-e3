@@ -7,17 +7,17 @@ module CircuitSim
     def initialize
       @wires = {}
       @state = {}
-      @input_ports = []
-      @output_ports = []
       @ordered_keys = []
       @truth_table = TruthTable.new(self)
     end
 
     def add_input_port(port)
+      @input_ports ||= []
       @input_ports << port
     end
 
     def add_output_ports(port)
+      @output_ports ||= []
       @output_ports << port
     end
 
